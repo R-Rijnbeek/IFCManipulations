@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-ifcmanipulations\__init__.py: This module has been build to have a standard API to connect with .IFC files
+ifcmanipulations/__init__.py: This module has been build to have a standard API to connect with .IFC files
 """
 __author__          = "Robert Rijnbeek"
 __version__         = "1.0.1"
@@ -32,7 +32,7 @@ from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
 
 # ===============  CODE  ===============
 
-class IFC_API:
+class IFCManipulations:
     def __init__(self, FILE):
         """
         CONSTRUCTOR FUCTIONS
@@ -156,7 +156,7 @@ class IFC_API:
     
 
 
-    def CreateNewSiteObject(self,NAME="site",OWNER_HISTORY=None,PROJECT=None):  #must be in ifc_api
+    def CreateNewSiteObject(self,NAME="site",OWNER_HISTORY=None,PROJECT=None):
         if OWNER_HISTORY==None:
             OWNER_HISTORY=self.owner_history
         if PROJECT==None:
@@ -949,7 +949,7 @@ def GetTextureFromIfcProduct(IFC_PRODUCT,MODE=""):
 
 
 
-class IFC_Viewer(IFC_API):
+class IFC_Viewer(IFCManipulations):
     def __init__(self,IFC_FILE):
         self.ifc_file = IFC_FILE
         self.settings=ifcopenshell.geom.settings()
