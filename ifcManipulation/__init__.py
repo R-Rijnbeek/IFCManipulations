@@ -23,12 +23,22 @@ from time import time, gmtime, strftime
 
 import tempfile
 
-from ..API.OCC_api import OCC_API
-
 from pathlib import Path
 
+from math import sqrt
+
 from OCC.Display.SimpleGui import init_display
-from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB 
+from OCC.Core.Quantity import Quantity_Color, Quantity_TOC_RGB
+
+from OCC.Core.GProp import GProp_GProps
+from OCC.Core.BRepGProp import brepgprop_SurfaceProperties, brepgprop_VolumeProperties
+from OCC.Core.TopoDS import topods_Wire,topods_Vertex
+from OCC.Core.BRep import BRep_Tool
+
+#from ..EXT.Common import get_boundingbox
+
+from OCC.Extend.TopologyUtils import TopologyExplorer
+
 
 # ===============  CODE  ===============
 
@@ -312,7 +322,7 @@ class IFCManipulations:
         return shape
 
 # ====== G E T    G E O M E T R Y    I N F O R M A T I O N    F R O M    I F C O B J E C T   ======
-
+    
     def GetVolumenFromObject(self,IFC_OBJECT):
         shape=self.GetShapeFromProduct(IFC_OBJECT)
         shape_instance = OCC_API(shape)
@@ -342,8 +352,7 @@ class IFCManipulations:
         shape_instance = OCC_API(shape)
         box =shape_instance.GetBoxFromShape()
         return box
-
-
+    
 
 # ====== O W N E R =======
 
@@ -946,9 +955,6 @@ def GetTextureFromIfcProduct(IFC_PRODUCT,MODE=""):
         opacity=1.
         return Red, Green, Blue, opacity
 
-
-
-
 class IFC_Viewer(IFCManipulations):
     def __init__(self,IFC_FILE):
         self.ifc_file = IFC_FILE
@@ -1027,7 +1033,74 @@ def New_IFC_Object(FILENAME,CREATOR,ORGANISATION_NAME,APPLICATION,APPLICATION_VE
     
     ifc_file=ifcopenshell.open(temp_filename)
 
-    return ifc_file     
+    return ifc_file
+
+
+# ===============  OCC TOOLS  ===============
+class OCC_API(TopologyExplorer):
+    def __init__(self, OCC_OBJECT):
+       TopologyExplorer.__init__(self,OCC_OBJECT)
+
+       self.shape=OCC_OBJECT
+
+    def GetSurfaceFromShape(self,SHAPE=None):
+        if SHAPE==None:
+            SHAPE = self.shape
+        surface_props = GProp_GProps()
+        brepgprop_SurfaceProperties(SHAPE, surface_props)
+        surface=surface_props.Mass()
+        return surface
+
+    def GetVolumenFromShape(self,SHAPE=None):
+        if SHAPE==None:
+            SHAPE = self.shape
+        volume_props = GProp_GProps()
+        brepgprop_VolumeProperties(self.shape, volume_props)
+        volume=volume_props.Mass()
+        if volume < 0:
+            volume = - volume
+        return volume
+
+    def getAll_TopoDS_Wire_list(self):
+        Topods_wire_list=[]
+        wires=self.wires()
+        for wire in wires:
+            wire_instance = topods_Wire(wire)
+            Topods_wire_list.append(wire_instance)
+        return Topods_wire_list
+
+    def GetMaxDistanceFromShape(self):
+        distance=0
+        edges=self.edges()
+        for edge in edges:
+            vertices=self.vertices_from_edge(edge)
+            point_list=[]
+            for vertex in vertices:
+                vertex_1=topods_Vertex(vertex)
+                point_instance=BRep_Tool.Pnt(vertex_1)
+                point=[point_instance.X(),point_instance.Y(),point_instance.Z()]
+                point_list.append(point)
+            [P1,P2]=point_list
+            dist=sqrt((P1[0]-P2[0])**2+(P1[1]-P2[1])**2+(P1[2]-P2[2])**2)
+            if dist > distance:
+                distance=dist
+        return distance 
+
+    def GetMaxAreaOfFacesFromShape(self):
+        area=0
+        faces=self.faces()
+        for face in faces:
+            surface=self.GetSurfaceFromShape(SHAPE=face)
+            if surface > area:
+                area = surface
+        return area
+
+    """
+    def GetBoxFromShape(self):
+        box=get_boundingbox(self.shape)
+        return box
+
+    """
 
 if __name__ == '__main__':
     pass
