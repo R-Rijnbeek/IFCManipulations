@@ -955,9 +955,6 @@ def GetTextureFromIfcProduct(IFC_PRODUCT,MODE=""):
         opacity=1.
         return Red, Green, Blue, opacity
 
-
-
-
 class IFC_Viewer(IFCManipulations):
     def __init__(self,IFC_FILE):
         self.ifc_file = IFC_FILE
