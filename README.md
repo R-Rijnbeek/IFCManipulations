@@ -37,11 +37,11 @@ If it works. Then you can use the 'LASManippulation' module directory as a local
 ## Notes to know: 
 
 1. The dependencies to use all features of this repository are writed on the environmet.yml file: pylas, OCC, numpy
-2. If you will only use the content of this repository. On a other proyect than you need to create an virtual environment that include "numpy", "pylas", "OCC" and "pyQT5"
+2. If you will only use the content of this repository. On a other proyect than you need to create an virtual environment that include "ifcopenshell", "OCC" and "pyQT5"
     * ANACONDA:
     ```
     conda install -c conda-forge pythonocc-core
-    conda install -c anaconda numpy
+    conda install -c conda-forge ifcopenshell
     ``` 
     * PIP:
     ```
